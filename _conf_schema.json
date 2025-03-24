@@ -1,0 +1,19 @@
+{
+    "database" : {
+        "type": "object",
+        "items": {
+            "user" : {
+                "description": "user",
+                "type": "string",
+                "hint": "用户数据库名称, 默认为 astrbot_plugin_database_user",
+                "default": "astrbot_plugin_database_user"
+            },
+            "economy" : {
+                "description": "economy",
+                "type": "string",
+                "hint": "经济数据库名称, 默认为 astrbot_plugin_database_economy",
+                "default": "astrbot_plugin_database_economy"
+            }
+        }
+    }
+}
