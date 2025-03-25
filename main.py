@@ -25,7 +25,7 @@ def open_databases(config,database_file,uid):
         db_economy.close()
 
 
-@register("Database", "城城", "-----", "1.0.0")
+@register("Database", "城城", "-----", "0.1.1")
 class DatabasePlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
@@ -35,12 +35,13 @@ class DatabasePlugin(Star):
     async def on_astrbot_loaded(self):
         os.makedirs(DATABASE_FILE, exist_ok=True)
         os.makedirs(PLUGIN_DIR, exist_ok=True)
+        
 
 
-    @event_message_type(EventMessageType.GROUP_MESSAGE)
+    @event_message_type(EventMessageType.GROUP_MESSAGE, priority=999)
     async def on_group_message(self, event: AstrMessageEvent):
         """初始化用户信息"""
-        UserId = event.message_obj.sender.user_id       # 获取消息的纯文本内容
+        UserId = event.message_obj.sender.user_id       #  获取消息的纯文本内容
         UserName = event.message_obj.sender.nickname    # 获取消息的发送者昵称
         with open_databases(self.config,DATABASE_FILE,UserId) as (db_user, db_economy):
             """初始化"""
