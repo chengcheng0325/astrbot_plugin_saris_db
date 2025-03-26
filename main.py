@@ -2,8 +2,8 @@ from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api.all import *
 from astrbot.api import logger
-from data.plugins.astrbot_plugin_database.Database.Database_user import Database_user
-from data.plugins.astrbot_plugin_database.Database.Database_economy import Database_economy
+from .Database.Database_user import Database_user
+from .Database.Database_economy import Database_economy
 
 from contextlib import contextmanager
 
