@@ -10,7 +10,7 @@ from contextlib import contextmanager
 import os
 
 # 路径配置
-PLUGIN_DIR = os.path.join('data', 'plugins', 'astrbot_plugin_database')
+PLUGIN_DIR = os.path.join('data', 'plugins', 'astrbot_plugin_saris_db')
 RUNNING_SCRIPT_DIRECTORY = os.getcwd()
 DATABASE_FILE = os.path.join(RUNNING_SCRIPT_DIRECTORY, os.path.join('data', 'Database'))
 

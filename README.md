@@ -1,8 +1,8 @@
 
 
-# [[astrbot_plugin_database](https://github.com/chengcheng0325/astrbot_plugin_database/tree/master)]
+# [[astrbot_plugin_saris_db](https://github.com/chengcheng0325/astrbot_plugin_saris_db/tree/master)]
 
-**插件别名：** database
+**插件别名：** saris_db
 
 **作者：** [城城](https://github.com/chengcheng0325)
 
@@ -12,6 +12,6 @@
 
  - 其他插件前置
 
-## 依赖astrbot_plugin_database的plugin
+## 依赖astrbot_plugin_saris_db的plugin
 
  - [astrbot_plugin_economic](https://github.com/chengcheng0325/astrbot_plugin_economic/tree/master)
