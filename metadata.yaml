@@ -3,4 +3,4 @@ desc: 数据库插件,为我的其他插件提供数据库支持 # 插件简短�
 help: 插件的帮助信息 # 插件的帮助信息
 version: v0.1.2 # 插件版本号。格式：v1.1.1 或者 v1.1
 author: 城城 # 作者
-repo: https://github.com/chengcheng0325/astrbot_plugin_database # 插件的仓库地址
+repo: https://github.com/chengcheng0325/astrbot_plugin_saris_db # 插件的仓库地址
