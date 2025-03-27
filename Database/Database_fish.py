@@ -1,273 +1,312 @@
-# import sqlite3
-# import json
-# from datetime import datetime, timedelta
+import sqlite3
+from math import exp
+import json
+# from astrbot.api.star import Context, Star, register
+# from astrbot.api import logger
+from datetime import datetime, timedelta
+# from astrbot.api import AstrBotConfig
+import os
 
-# class Database_fish:
-#     def __init__(self, id=None):
-#         self.userId = id
-#         self.connection = sqlite3.connect(r'C:\Users\Administrator\Desktop\Launcher_ALL_Requirements\Manyana\data\Database\fish.db')
-#         self.cursor = self.connection.cursor()
+RUNNING_SCRIPT_DIRECTORY = os.getcwd()
+SQL_FILE = os.path.join(RUNNING_SCRIPT_DIRECTORY, os.path.join('data', 'plugins', 'astrbot_plugin_saris_fish', 'sql'))
+
+class Database_fish():
+    def __init__(self,config, DatabaseFile, Id=None):
+        database_config = config.get("database", {})
+        database_name = database_config.get("user", "")
+        if database_name == "": database_name = "astrbot_plugin_database_fish"
+        db_file = os.path.join(DatabaseFile, database_name + ".db")
+        self.UID = Id
+        self.UserId = f"U{Id}"
+        self.connection = sqlite3.connect(db_file)
+        self.cursor = self.connection.cursor()
+
+        # 创建用户表Users   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS fish (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                种类 TEXT UNIQUE NOT NULL,
+                价格 REAL,
+                稀有度 TEXT,
+                高度 TEXT,
+                生物群系 TEXT,
+                渔获品质 TEXT,
+                是否任务 INTEGER
+            )
+        """)
+
+        # 创建用户表Users   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS fishing_pole (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                种类 TEXT UNIQUE NOT NULL,
+                渔力 INTEGER,
+                价格 REAL,
+                稀有度 TEXT,
+                最大耐久 INTEGER,
+                最小耐久 INTEGER
+            )
+        """)
+
+        # 创建用户表Users   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS bait (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                种类 TEXT UNIQUE NOT NULL,
+                渔力 INTEGER,
+                价格 REAL,
+                稀有度 TEXT
+            )
+        """)
+
+        self._execute_sql_file("a.db", "fish.sql")
+
+    def _execute_sql_file(self, db_file, sql_file):
+        """
+        读取 SQL 文件并执行其中的 SQL 语句。
+        Args:
+            db_file (str): 数据库文件的路径。
+            sql_file (str): SQL 文件的路径。
+        """
+        try:
+            with open(os.path.join(SQL_FILE, sql_file), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
+                sql_script = f.read()
+            if self.get_all_fish() == []:
+                self.cursor.execute(sql_script)
+                self.connection.commit()
+                print(f"成功执行 SQL 文件 '{sql_file}'")
+            
+            with open(os.path.join(SQL_FILE, f"1{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
+                sql_script = f.read()
+            if self.get_all_fishing_pole() == []:
+                self.cursor.execute(sql_script)
+                self.connection.commit()
+                print(f"成功执行 SQL 文件 '{sql_file}'")
+            
+            with open(os.path.join(SQL_FILE, f"2{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
+                sql_script = f.read()
+            if self.get_all_bait() == []:
+                self.cursor.execute(sql_script)
+                self.connection.commit()
+                print(f"成功执行 SQL 文件 '{sql_file}'")
+
+            
+        except sqlite3.Error as e:
+            print(f"执行 SQL 文件时发生错误: {e}")
+        except FileNotFoundError:
+            print(f"找不到 SQL 文件: {sql_file}")
+        except Exception as e:  # 捕获其他异常
+            print(f"发生未知错误: {e}")
+        finally:
+            pass
+
+
+
+    def close(self):
+        self.cursor.close()
+        self.connection.close()
+    
+    # ********** fish表操作 **********
+    
+    def get_all_fish(self):
+        """
+        根据 UserId 查询用户信息。
+        Returns:
+            一个元组，包含查询到的用户信息 (ID, UserId, UID, UserName)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("SELECT * FROM fish")
+            result = self.cursor.fetchall()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询用户时发生错误：{e}")
+            return None
+    
+
+
+    # ********** fishing_pole表操作 **********
+
+    def get_all_fishing_pole(self):
+        """
+        根据 UserId 查询用户信息。
+        Returns:
+            一个元组，包含查询到的用户信息 (ID, UserId, UID, UserName)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("SELECT * FROM fishing_pole")
+            result = self.cursor.fetchall()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询用户时发生错误：{e}")
+            return None
+    
+    def get_fishing_pole_by_kind(self, 种类):
+        """
+        根据 UserId 查询用户签到信息。
+        Returns:
+            一个元组，包含查询到的签到信息 (ID, UserId, SignInDate, SignInCount, SignInCoins)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT *
+                FROM fishing_pole
+                WHERE 种类 = ?
+            """, (种类,))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询签到记录时发生错误：{e}")
+            return None
+
+    # # ********** bait表操作 **********
+
+    def get_all_bait(self):
+        """
+        根据 UserId 查询用户信息。
+        Returns:
+            一个元组，包含查询到的用户信息 (ID, UserId, UID, UserName)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("SELECT * FROM bait")
+            result = self.cursor.fetchall()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询用户时发生错误：{e}")
+            return None
         
-#         # 创建表格
-#         self.cursor.execute('''
-#             CREATE TABLE IF NOT EXISTS fish_pond (
-#                            name TEXT NOT NULL,                   -- 名称
-#                            max_size INTEGER NOT NULL,            -- 最大大小
-#                            min_size INTEGER NOT NULL,            -- 最小大小
-#                            price REAL NOT NULL,                  -- 单价
-#                            description TEXT NOT NULL,            -- 描述
-#                            type TEXT NOT NULL,                   -- 种类
-#                            rarity TEXT NOT NULL                  -- 稀有度
-# );
-#         ''')
-#         self.cursor.execute('''
-#             CREATE TABLE IF NOT EXISTS fish_pole (
-#                         item TEXT,               -- 物品标识
-#                         name TEXT ,             -- 名称
-#                         耐久 INTEGER,           -- 物品的大小
-#                         最大耐久 INTEGER,       -- 物品的最大耐久
-#                         强度 REAL,            -- 鱼竿的上钩率
-#                         经验加成 REAL,        -- 经验加成
-#                         金币加成 REAL,        -- 金币加成
-#                         特殊效果 TEXT,           -- 特殊效果
-#                         PRIMARY KEY (item, name)
-                        
-# );
-#         ''')
-#                 # self.cursor.execute('''
-#         #     CREATE TABLE IF NOT EXISTS rod_levels (
-#         #         userId TEXT PRIMARY KEY,
-#         #         level INTEGER
-#         #     )
-#         # ''')
-#         # self.cursor.execute('''
-#         #     CREATE TABLE IF NOT EXISTS backpack_levels (
-#         #         userId TEXT PRIMARY KEY,
-#         #         level INTEGER
-#         #     )
-#         # ''')
-#         # self.cursor.execute('''
-#         #     CREATE TABLE IF NOT EXISTS backpack (
-#         #         userId TEXT,
-#         #         backPackData TEXT
-#         #     )
-#         # ''')
-#         # self.cursor.execute('''
-#         #     CREATE TABLE IF NOT EXISTS pool (
-#         #         fishName TEXT,
-#         #         value INTEGER,
-#         #         count INTEGER,
-#         #         owner TEXT,
-#         #         PRIMARY KEY (fishName, owner)
-#         #     )
-#         # ''')
-#         # self.cursor.execute('''
-#         #     CREATE TABLE IF NOT EXISTS cooling (
-#         #         userId TEXT PRIMARY KEY,
-#         #         fishing_time DATETIME,
-#         #         release_time DATETIME
-#         #     )
-#         # ''')
-#         self.connection.commit()
+    def get_bait_by_kind(self, 种类):
+        """
+        根据 UserId 查询用户签到信息。
+        Returns:
+            一个元组，包含查询到的签到信息 (ID, UserId, SignInDate, SignInCount, SignInCoins)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT *
+                FROM bait
+                WHERE 种类 = ?
+            """, (种类,))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询签到记录时发生错误：{e}")
+            return None
 
-#     def close(self):
-#         self.cursor.close()
-#         self.connection.close()
-
-#     def fish_rarity(self, rarity):
-#         '''
-#         根据鱼稀有度获取鱼列表
-        
-#         返回:
-#         0: name
-#         1: 最大
-#         2: 最小
-#         3: 单价
-#         4: 描述
-#         5: 类型
-#         6: 稀有度
-#         '''
-#         if rarity is None: return
-#         self.cursor.execute('SELECT * FROM fish_pond WHERE rarity = ?', (rarity,))
-#         return self.cursor.fetchall()
+    # def insert_sign_in(self):
+    #     """
+    #     向 signIns 表中插入一条新记录。
+    #     """
+    #     if self.UserId is None: return
+    #     try:
+    #         # sign_in_date = datetime.now().strftime("%Y-%m-%d")
+    #         sign_in_date = "2025-01-01"
+    #         self.cursor.execute("""
+    #             INSERT INTO signIns (UserId, SignInDate, SignInCount, SignInCoins)
+    #             VALUES (?, ?, ?, ?)
+    #         """, (self.UserId, sign_in_date, 0, 0.0))
+    #         self.connection.commit()
+    #     except sqlite3.Error as e:
+    #         return f"插入签到记录时发生错误：{e}"
     
+    # def query_sign_in(self):
+    #     """
+    #     根据 UserId 查询用户签到信息。
+    #     Returns:
+    #         一个元组，包含查询到的签到信息 (ID, UserId, SignInDate, SignInCount, SignInCoins)，如果没有找到则返回 None。
+    #     """
+    #     try:
+    #         self.cursor.execute("""
+    #             SELECT ID, UserId, SignInDate, SignInCount, SignInCoins
+    #             FROM signIns
+    #             WHERE UserId = ?
+    #         """, (self.UserId,))
+    #         result = self.cursor.fetchone()  # 获取一条记录
+    #         return result
+    #     except sqlite3.Error as e:
+    #         print(f"查询签到记录时发生错误：{e}")
+    #         return None
     
-
-
-#     def fish_pole_rarity(self, item):
-#         '''获取鱼竿属性'''
-#         if self.userId is None: return
-#         self.cursor.execute('SELECT * FROM fish_pole WHERE item = ?', (item,))
-#         return self.cursor.fetchall()[0]
-
-
-#     # # 冷却相关
-#     # def fishing_cooling(self):
-#     #     if self.userId is None: return
-#     #     result = self.cursor.execute('SELECT fishing_time FROM cooling WHERE userId = ?', (self.userId,))
-#     #     if len(result.fetchall()) == 0:
-#     #         self.initialization_cooling()
-#     #     result = self.cursor.execute('SELECT fishing_time FROM cooling WHERE userId = ?', (self.userId,))
-#     #     return self.cursor.fetchone()[0]
-
-#     # def set_fishing_cooling(self, cooling):
-#     #     if self.userId is None: return
-#     #     self.cursor.execute("UPDATE cooling SET fishing_time = ? WHERE userId = ?", (cooling, self.userId))
-#     #     self.connection.commit()
-
-#     # def release_cooling(self):
-#     #     if self.userId is None: return
-#     #     result = self.cursor.execute('SELECT release_time FROM cooling WHERE userId = ?', (self.userId,))
-#     #     if len(result.fetchall()) == 0:
-#     #         self.initialization_cooling()
-#     #     result = self.cursor.execute('SELECT release_time FROM cooling WHERE userId = ?', (self.userId,))
-#     #     return self.cursor.fetchone()[0]
-
-#     # def set_release_cooling(self, cooling):
-#     #     if self.userId is None: return
-#     #     self.cursor.execute("UPDATE cooling SET release_time = ? WHERE userId = ?", (cooling, self.userId))
-#     #     self.connection.commit()
-
-#     # def initialization_cooling(self):
-#     #     if self.userId is None: return
-#     #     t = datetime.now()
-#     #     self.cursor.execute('INSERT INTO cooling (userId, fishing_time, release_time) VALUES (?, ?, ?)', (self.userId, t, t))
-#     #     self.connection.commit()
-
-#     # # 鱼塘相关
-#     # def updatePool(self, fishData):
-#     #     self.cursor.execute('DELETE FROM pool')
-#     #     for data in fishData:
-#     #         if data[1] == 0: continue
-#     #         self.cursor.execute('INSERT INTO pool (fishName, value, count, owner) VALUES (?, ?, ?, ?)', data)
-#     #     self.connection.commit()
-
-#     # def insertFish(self, fishName, value, number):
-#     #     if self.userId is None: return
-#     #     self.cursor.execute('INSERT INTO pool (fishName, value, count, owner) VALUES (?, ?, ?, ?)', (fishName, value, number, self.userId))
-#     #     self.connection.commit()
-
-#     # def reduceFish(self, fishName):
-#     #     self.cursor.execute('UPDATE pool SET count = count - 1 WHERE fishName = ? AND owner = ?', (fishName, self.userId))
-#     #     self.connection.commit()
-#     #     if self.cursor.execute('SELECT count FROM pool WHERE fishName = ? AND owner = ?', (fishName, self.userId)).fetchone()[0] == 0:
-#     #         self.cursor.execute('DELETE FROM pool WHERE fishName = ? AND owner = ?', (fishName, self.userId))
-#     #         self.connection.commit()
-
-#     # def removeFish(self, fishName):
-#     #     self.cursor.execute('DELETE FROM pool WHERE fishName = ? AND owner = ?', (fishName, self.userId))
-#     #     self.connection.commit()
-
-#     # def selectFishOwner(self, fishName):
-#     #     self.cursor.execute('SELECT owner FROM pool WHERE fishName = ?', (fishName,))
-#     #     result = self.cursor.fetchall()
-#     #     if not result: return None, None
-#     #     userId = result[0][0]
-#     #     self.cursor.execute('SELECT name FROM users WHERE userId = ?', (userId,))
-#     #     return userId, self.cursor.fetchall()[0][0]
-
-#     # def selectFish(self, fishName):
-#     #     self.cursor.execute('SELECT * FROM pool WHERE fishName = ? AND owner = ?', (fishName, self.userId))
-#     #     return self.cursor.fetchall()
-
-#     # def selectPool(self):
-#     #     self.cursor.execute('SELECT * FROM pool WHERE owner = ?', (self.userId,))
-#     #     return self.cursor.fetchall()
+    # def update_sign_in(self,economy):
+    #     """
+    #     更新用户签到信息。
+    #     """
+    #     if self.UserId is None: return
+    #     try:
+    #         sign_in_date = datetime.now().strftime("%Y-%m-%d")
+    #         self.cursor.execute("""
+    #             UPDATE signIns
+    #             SET SignInDate = ?,
+    #                 SignInCount = SignInCount + 1,
+    #                 SignInCoins = ?
+    #             WHERE UserId = ?
+    #         """, (sign_in_date, economy, self.UserId))
+    #         self.connection.commit()
+    #     except sqlite3.Error as e:
+    #         return f"更新签到记录时发生错误：{e}"
     
-#     # # 用户信用点变更
-#     # def selectUser(self):
-#     #     if self.userId is None: return
-#     #     self.cursor.execute('SELECT * FROM users WHERE userId = ?', (self.userId,))
-#     #     return self.cursor.fetchall()
-
-#     # def selectAllUser(self):
-#     #     self.cursor.execute('SELECT * FROM users')
-#     #     return self.cursor.fetchall()
-
-#     # # 鱼竿相关
-#     # def selectRodLevel(self):
-#     #     if self.userId is None: return
-#     #     result = self.cursor.execute('SELECT level FROM rod_levels WHERE userId = ?', (self.userId,))
-#     #     if len(result.fetchall()) == 0:
-#     #         self.insertRodLevel(1)
-#     #     result = self.cursor.execute('SELECT level FROM rod_levels WHERE userId = ?', (self.userId,))
-#     #     return self.cursor.fetchone()[0]
-
-#     # def selectAllRodLevel(self):
-#     #     self.cursor.execute('SELECT * FROM rod_levels')
-#     #     return self.cursor.fetchall()
-
-#     # def insertRodLevel(self, level):
-#     #     if self.userId is None: return
-#     #     self.cursor.execute('INSERT INTO rod_levels (userId, level) VALUES (?, ?)', (self.userId, level))
-#     #     self.connection.commit()
-
-#     # def updateRodLevel(self, level):
-#     #     if self.userId is None: return
-#     #     self.selectRodLevel()
-#     #     if self.userId is None: return
-#     #     self.cursor.execute('UPDATE rod_levels SET level = ? WHERE userId = ?', (level, self.userId))
-#     #     self.connection.commit()
-
-#     # def increaseRodLevel(self):
-#     #     if self.userId is None: return
-#     #     level = self.selectRodLevel()
-#     #     pointNeeded = int(20 * (2 ** (level - 1)))
-#     #     self.cursor.execute('UPDATE rod_levels SET level = level + 1 WHERE userId = ?', (self.userId,))
-#     #     self.connection.commit()
-
-#     # # 背包相关
-#     # def updateBackpack(self, backPackData):
-#     #     if self.userId is None: return
-#     #     dataString = json.dumps(backPackData)
-#     #     self.cursor.execute('UPDATE backpack SET backPackData = ? WHERE userId = ?', (dataString, self.userId))
-#     #     self.connection.commit()
-
-#     # def selectBackpackLevel(self):
-#     #     if self.userId is None: return
-#     #     result = self.cursor.execute('SELECT level FROM backpack_levels WHERE userId = ?', (self.userId,))
-#     #     if len(result.fetchall()) == 0:
-#     #         self.insertBackpackLevel(1)
-#     #     result = self.cursor.execute('SELECT level FROM backpack_levels WHERE userId = ?', (self.userId,))
-#     #     return self.cursor.fetchone()[0]
-
-#     # def selectAllBackpackLevel(self):
-#     #     self.cursor.execute('SELECT * FROM backpack_levels')
-#     #     return self.cursor.fetchall()
-
-#     # def insertBackpackLevel(self, level):
-#     #     if self.userId is None: return
-#     #     self.cursor.execute('INSERT INTO backpack_levels (userId, level) VALUES (?, ?)', (self.userId, level))
-#     #     self.connection.commit()
-
-#     # def increaseBackpackLevel(self):
-#     #     if self.userId is None: return
-#     #     level = self.selectBackpackLevel()
-#     #     pointNeeded = int((2.5 ** level) * 15)
-#     #     self.cursor.execute('UPDATE backpack_levels SET level = level + 1 WHERE userId = ?', (self.userId,))
-#     #     self.connection.commit()
-
-#     # def selectBackpack(self):
-#     #     if self.userId is None: return []
-#     #     self.cursor.execute('SELECT * FROM backpack WHERE userId = ?', (self.userId,))
-#     #     result = self.cursor.fetchall()
-#     #     if not result:
-#     #         self.cursor.execute('INSERT INTO backpack (userId, backPackData) VALUES (?, "[]")', (self.userId,))
-#     #         self.connection.commit()
-#     #     return json.loads(result[0][1]) if result else []
+    # def query_sign_in_count(self):
+    #     """
+    #     查询用户签到次数。
+    #     Returns:
+    #         一个整数，表示用户签到次数。
+    #     """
+    #     if self.UserId is None: return 0
+    #     try:
+    #         self.cursor.execute("""
+    #             SELECT SignInCount
+    #             FROM signIns
+    #             WHERE UserId = ?
+    #         """, (self.UserId,))
+    #         result = self.cursor.fetchone()  # 获取一条记录
+    #         if result is None: return 0
+    #         return result
+    #     except sqlite3.Error as e:
+    #         print(f"查询签到次数时发生错误：{e}")
+    #         return 0
+    
+    # def query_sign_in_coins(self):
+    #     """
+    #     查询用户签到获得的金币。
+    #     Returns:
+    #         一个浮点数，表示用户签到获得的金币。
+    #     """
+    #     if self.UserId is None: return 0.0
+    #     try:
+    #         self.cursor.execute("""
+    #             SELECT SignInCoins
+    #             FROM signIns
+    #             WHERE UserId = ?
+    #         """, (self.UserId,))
+    #         result = self.cursor.fetchone()  # 获取一条记录
+    #         if result is None: return 0.0
+    #         return result[0]
+    #     except sqlite3.Error as e:
+    #         print(f"查询签到获得的金币时发生错误：{e}")
+    #         return 0.0
+    
+    # def query_last_sign_in_date(self):
+    #     """
+    #     查询用户上次签到日期。
+    #     Returns:
+    #         一个字符串，表示用户上次签到日期 (YYYY-MM-DD 格式)。
+    #     """
+    #     if self.UserId is None: return ""
+    #     try:
+    #         self.cursor.execute("""
+    #             SELECT SignInDate
+    #             FROM signIns
+    #             WHERE UserId = ?
+    #             ORDER BY ID DESC
+    #             LIMIT 1
+    #         """, (self.UserId,))
+    #         result = self.cursor.fetchone()  # 获取一条记录
+    #         if result is None: return ""
+    #         return result[0]
+    #     except sqlite3.Error as e:
+    #         print(f"查询上次签到日期时发生错误：{e}")
+    #         return ""
 
 
 
 # if __name__ == '__main__':
-#     db = Database_fish(3079233608)
-#     yg = db.fish_pole_rarity("fish_pole_0")
-#     print(yg)
-#     # data = [(item[2]) for item in yg if item[9] == '使用中']
-#     # item = data[0]
-#     # print(item)
-#     # print(状态)
-#     # fish_cooling_str = db.cooling_rarity("钓鱼")
-#     # fish_cooling = datetime.strptime(fish_cooling_str, "%Y-%m-%d %H:%M:%S.%f")
-#     # time_without_milliseconds = fish_cooling.strftime("%Y-%m-%d %H:%M:%S")
-#     # print(time_without_milliseconds)
-#     # # print(f"{fish_cooling.strftime(r"%Y-%m-%d %H:%M:%S")}")
+#     Database_user()

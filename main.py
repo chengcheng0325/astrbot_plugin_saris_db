@@ -4,6 +4,7 @@ from astrbot.api.all import *
 from astrbot.api import logger
 from .Database.Database_user import Database_user
 from .Database.Database_economy import Database_economy
+from .Database.Database_fish import Database_fish
 
 from contextlib import contextmanager
 
@@ -18,14 +19,16 @@ DATABASE_FILE = os.path.join(RUNNING_SCRIPT_DIRECTORY, os.path.join('data', 'Dat
 def open_databases(config,database_file,uid):
     db_user = Database_user(config=config,DatabaseFile=database_file,Id=uid)
     db_economy = Database_economy(config=config,DatabaseFile=database_file,Id=uid)
+    db_fish = Database_fish(config=config,DatabaseFile=database_file,Id=uid)
     try:
-        yield db_user, db_economy
+        yield db_user, db_economy, db_fish
     finally:
         db_user.close()
         db_economy.close()
+        db_fish.close()
 
 
-@register("Database", "城城", "-----", "0.1.2")
+@register("Database", "城城", "-----", "0.2.0")
 class DatabasePlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
@@ -43,14 +46,18 @@ class DatabasePlugin(Star):
         """初始化用户信息"""
         UserId = event.message_obj.sender.user_id       #  获取消息的纯文本内容
         UserName = event.message_obj.sender.nickname    # 获取消息的发送者昵称
-        with open_databases(self.config,DATABASE_FILE,UserId) as (db_user, db_economy):
+        with open_databases(self.config,DATABASE_FILE,UserId) as (db_user, db_economy, db_fish):
             """初始化"""
             if db_user.query_user() == None:
                 db_user.insert_user(UserName)
             if db_user.query_sign_in() == None:
                 db_user.insert_sign_in()
+            if db_user.query_fish_cooling() == None:
+                db_user.insert_fish_cooling()
+
             if db_economy.get_economy() == None:
                 db_economy.insert_user()
+            
 
 
 

@@ -39,6 +39,15 @@ class Database_user(Star):
             )
         """)
 
+        # 创建用户表Users   ID:自动编号   UserId:U+用户QQ    UID:用户QQ    UserName:用户名
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS fish_cooling (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                UserId TEXT NOT NULL,
+                cooling TEXT NOT NULL
+            )
+        """)
+
 
     def close(self):
         self.cursor.close()
@@ -196,22 +205,55 @@ class Database_user(Star):
             print(f"查询上次签到日期时发生错误：{e}")
             return ""
     
-    # def query_sign_in_days(self):
-    #     """
-    #     查询用户连续签到天数。
-    #     Returns:
-    #         一个整数，表示用户连续签到天数。
-    #     """
-    #     if self.UserId is None: return 0
-    #     try:
-    #         last_sign_in_date = self.query_last_sign_in_date()
-    #         if last_sign_in_date == "": return 0
-    #         last_sign_in_date = datetime.strptime(last_sign_in_date, "%Y-%m-%d")
-    #         today = datetime.now()
-    #         sign_in_days = (today - last_sign_in_date).days
-    #         return sign_in_days
-    #     except sqlite3.Error as e:
-    #         print(f"查询连续签到天数时发生错误：{e}")
-    #         return 0
+    # ********** fish_cooling表操作 **********
+
+    def insert_fish_cooling(self):
+        """
+        向 fish_cooling 表中插入一条新记录。
+        """
+        if self.UserId is None: return
+        try:
+            self.cursor.execute("""
+                INSERT INTO fish_cooling (UserId, cooling)
+                VALUES (?, ?)
+            """, (self.UserId, "2024-12-30 10:00:00"))
+            self.connection.commit()
+        except sqlite3.Error as e:
+            return f"插入用户时发生错误：{e}"
     
-    
+    def query_fish_cooling(self):
+        """
+        根据 UserId 查询用户钓鱼冷却信息。
+        Returns:
+            一个元组，包含查询到的用户信息 (ID, UserId, cooling)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT cooling
+                FROM fish_cooling
+                WHERE UserId = ?
+            """, (self.UserId,))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询用户时发生错误：{e}")
+            return None
+        
+    def update_fish_cooling(self):
+        """
+        更新用户钓鱼冷却信息。
+        """
+        if self.UserId is None: return
+        try:
+            cooling_time_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            cooling_time_date = datetime.strptime(cooling_time_date_str, "%Y-%m-%d %H:%M:%S")
+            cooling_time_date = cooling_time_date + timedelta(minutes=10)
+            cooling_time_date = cooling_time_date.strftime("%Y-%m-%d %H:%M:%S")
+            self.cursor.execute("""
+                UPDATE fish_cooling
+                SET cooling = ?
+                WHERE UserId = ?
+            """, (cooling_time_date, self.UserId))
+            self.connection.commit()
+        except sqlite3.Error as e:
+            return f"更新签到记录时发生错误：{e}"
