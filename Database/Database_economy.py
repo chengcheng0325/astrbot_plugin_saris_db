@@ -75,6 +75,8 @@ class Database_economy(Star):
         try:
             self.cursor.execute("SELECT Economy FROM wallet WHERE UserId = ?", (self.UserId,))
             result = self.cursor.fetchone()  # 获取一条记录
+            if result is None:
+                return None
             return round(result[0], 2)
         except sqlite3.Error as e:
             print(f"查询用户时发生错误：{e}")
