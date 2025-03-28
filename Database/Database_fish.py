@@ -24,7 +24,7 @@ class Database_fish():
         self.connection = sqlite3.connect(db_file)
         self.cursor = self.connection.cursor()
 
-        # 创建鱼表fish   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质
+        # 创建鱼表fish   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质，类型，是否任务
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS fish (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -34,6 +34,7 @@ class Database_fish():
                 高度 TEXT,
                 生物群系 TEXT,
                 渔获品质 TEXT,
+                类型 TEXT,
                 是否任务 INTEGER
             )
         """)
@@ -115,7 +116,7 @@ class Database_fish():
         """
         获取所有鱼的信息。
         Returns:
-            一个元组，包含查询到的鱼的信息 (ID, 种类, 价格, 稀有度, 高度, 生物群系, 渔获品质, 是否任务)，如果没有找到则返回 None。
+            一个元组，包含查询到的鱼的信息 (ID, 种类, 价格, 稀有度, 高度, 生物群系, 渔获品质, 类型, 是否任务)，如果没有找到则返回 None。
         """
         try:
             self.cursor.execute("SELECT * FROM fish")

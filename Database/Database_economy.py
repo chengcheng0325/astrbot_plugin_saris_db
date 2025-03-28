@@ -54,7 +54,7 @@ class Database_economy(Star):
         self.cursor.execute("UPDATE wallet SET Economy = Economy + ? WHERE UserId = ?", (amount, self.UserId))
         self.connection.commit()
 
-    def subtract_economy(self, amount):
+    def reduce_economy(self, amount):
         """
         减少用户金币。
 
@@ -62,7 +62,7 @@ class Database_economy(Star):
             amount: 要减少的金币数量。如果余额不足，则设置为0。
         """
         if self.UserId is None: return
-        self.cursor.execute("UPDATE wallet SET Economy = MAX(0, Economy - ?) WHERE UserId = ?", (amount, self.UserId))
+        self.cursor.execute("UPDATE wallet SET Economy = Economy - ? WHERE UserId = ?", (amount, self.UserId))
         self.connection.commit()
 
     def get_economy(self):
@@ -75,7 +75,7 @@ class Database_economy(Star):
         try:
             self.cursor.execute("SELECT Economy FROM wallet WHERE UserId = ?", (self.UserId,))
             result = self.cursor.fetchone()  # 获取一条记录
-            return result
+            return round(result[0], 2)
         except sqlite3.Error as e:
             print(f"查询用户时发生错误：{e}")
             return None
