@@ -13,6 +13,12 @@
                 "type": "string",
                 "hint": "经济数据库名称, 默认为 astrbot_plugin_database_economy",
                 "default": "astrbot_plugin_database_economy"
+            },
+            "fish" : {
+                "description": "fish",
+                "type": "string",
+                "hint": "赛博钓鱼数据库名称, 默认为 astrbot_plugin_database_fish",
+                "default": "astrbot_plugin_database_fish"
             }
         }
     }

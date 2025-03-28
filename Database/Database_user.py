@@ -128,6 +128,8 @@ class Database_user(Star):
     def update_sign_in(self,economy):
         """
         更新用户签到信息。
+        Args:
+            economy: 签到获得的金币数。
         """
         if self.UserId is None: return
         try:
@@ -225,7 +227,7 @@ class Database_user(Star):
         """
         根据 UserId 查询用户钓鱼冷却信息。
         Returns:
-            一个元组，包含查询到的用户信息 (ID, UserId, cooling)，如果没有找到则返回 None。
+            一个元组，包含查询到的用户信息 (cooling,)，如果没有找到则返回 None。
         """
         try:
             self.cursor.execute("""
@@ -239,15 +241,17 @@ class Database_user(Star):
             print(f"查询用户时发生错误：{e}")
             return None
         
-    def update_fish_cooling(self):
+    def update_fish_cooling(self, minutes):
         """
         更新用户钓鱼冷却信息。
+        Args:
+            minutes: 冷却时间，单位为分钟。
         """
         if self.UserId is None: return
         try:
             cooling_time_date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cooling_time_date = datetime.strptime(cooling_time_date_str, "%Y-%m-%d %H:%M:%S")
-            cooling_time_date = cooling_time_date + timedelta(minutes=10)
+            cooling_time_date = cooling_time_date + timedelta(minutes=minutes)
             cooling_time_date = cooling_time_date.strftime("%Y-%m-%d %H:%M:%S")
             self.cursor.execute("""
                 UPDATE fish_cooling

@@ -28,7 +28,7 @@ def open_databases(config,database_file,uid):
         db_fish.close()
 
 
-@register("Database", "城城", "-----", "0.2.0")
+@register("Database", "城城", "-----", "0.2.1")
 class DatabasePlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
@@ -48,13 +48,17 @@ class DatabasePlugin(Star):
         UserName = event.message_obj.sender.nickname    # 获取消息的发送者昵称
         with open_databases(self.config,DATABASE_FILE,UserId) as (db_user, db_economy, db_fish):
             """初始化"""
+            # 用户表
             if db_user.query_user() == None:
                 db_user.insert_user(UserName)
+            # 签到表
             if db_user.query_sign_in() == None:
                 db_user.insert_sign_in()
+            # 钓鱼冷却表
             if db_user.query_fish_cooling() == None:
                 db_user.insert_fish_cooling()
 
+            # 经济表
             if db_economy.get_economy() == None:
                 db_economy.insert_user()
             
