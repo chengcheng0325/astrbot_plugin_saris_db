@@ -39,9 +39,9 @@ class Database_backpack(Star):
     
     # ********** Backpacks表操作 **********
 
-    def insert_backpack(self, item_name, item_count, item_type, item_value, item_max_durability, item_current_durability,ItemUseStatus=0):
+    def insert_backpack(self, item_name, item_count, item_type, item_value, item_max_durability = 0, item_current_durability = 0, ItemUseStatus=0):
         """
-        向 Backpacks 表中插入一条新记录。
+        向 Backpacks 表中插入一条新记录，并返回新插入行的 ID。
         Args:
             item_name: 物品名称 (字符串, 支持 Emoji)。
             item_count: 物品数量 (整数)。
@@ -50,16 +50,29 @@ class Database_backpack(Star):
             item_max_durability: 物品最大耐久 (整数)。
             item_current_durability: 物品当前耐久 (整数)。
             ItemUseStatus:物品使用状态(0:未使用|不能使用, 1:已使用)
+        Returns:
+            新插入行的 ID (整数)，如果插入失败则返回 None 或错误信息。
         """
-        if self.UserId is None: return
+        if self.UserId is None:
+            return None  # 或者返回一个错误信息，例如 "UserId 未设置"
+
         try:
             self.cursor.execute("""
                 INSERT INTO Backpacks (UserId, ItemName, ItemCount, ItemType, ItemValue, ItemMaxDurability, ItemCurrentDurability, ItemUseStatus)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (self.UserId, item_name, item_count, item_type, item_value, item_max_durability, item_current_durability,ItemUseStatus))
+            """, (self.UserId, item_name, item_count, item_type, item_value, item_max_durability, item_current_durability, ItemUseStatus))
             self.connection.commit()
+
+            # 获取最后插入行的 ID
+            last_row_id = self.cursor.lastrowid
+            return last_row_id
+
         except sqlite3.Error as e:
-            return f"插入背包物品时发生错误：{e}"
+            # 记录错误日志是一个好习惯
+            print(f"插入背包物品时发生错误：{e}")  # 或者使用 logger.error()
+            return f"插入背包物品时发生错误：{e}"  # 返回错误信息，方便调用者处理
+
+
     
     def query_backpack(self):
         """

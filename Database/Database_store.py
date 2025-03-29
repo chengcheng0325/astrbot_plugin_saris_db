@@ -37,15 +37,26 @@ class Database_store():
             )
         """)
 
-        # 创建钓鱼商店表fishstore   ID:自动编号    ItemName:物品名称    ItemCount:物品数量    ItemType:物品类型    ItemValue:物品价值    ItemDurability:物品耐久
+        # 创建鱼竿商店表fishing_rod_store   ID:自动编号    ItemName:物品名称    ItemCount:物品数量    ItemType:物品类型    ItemValue:物品价值    ItemDurability:物品耐久
         self.cursor.execute("""
-            CREATE TABLE IF NOT EXISTS fishstore (
+            CREATE TABLE IF NOT EXISTS fishing_rod_store (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 ItemName TEXT NOT NULL,
                 ItemCount INTEGER NOT NULL,
                 ItemType TEXT NOT NULL,
                 ItemValue REAL NOT NULL,
                 ItemDurability INTEGER NOT NULL
+            )
+        """)
+
+        # 创建鱼饵商店表bait_store   ID:自动编号    ItemName:物品名称    ItemCount:物品数量    ItemType:物品类型    ItemValue:物品价值
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS bait_store (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                ItemName TEXT NOT NULL,
+                ItemCount INTEGER NOT NULL,
+                ItemType TEXT NOT NULL,
+                ItemValue REAL NOT NULL
             )
         """)
     
@@ -65,10 +76,17 @@ class Database_store():
             if FISHSQL_FILE: 
                 with open(os.path.join(FISHSQL_FILE, sql_file), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
                     sql_script = f.read()
-                if self.get_all_fish_store() == []:
+                if self.get_all_fishing_rod_store() == []:
                     self.cursor.execute(sql_script)
                     self.connection.commit()
                     print(f"成功执行 SQL 文件 '{sql_file}'")
+                
+                with open(os.path.join(FISHSQL_FILE, "1"+sql_file), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
+                    sql_script = f.read()
+                if self.get_all_bait_store() == []:
+                    self.cursor.execute(sql_script)
+                    self.connection.commit()
+                    print(f"成功执行 SQL 文件 '{"1"+sql_file}'")
             
             with open(os.path.join(SQL_FILE, f"{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
                 sql_script = f.read()
@@ -110,26 +128,50 @@ class Database_store():
         result = self.cursor.fetchone()
         return result
     
-    # ********** fishstore表操作 **********
+    # ********** fishing_rod_store表操作 **********
 
-    def get_all_fish_store(self):
+    def get_all_fishing_rod_store(self):
         """
-        获取所有钓鱼商店中的物品信息。
+        获取所有 渔具商店 鱼竿 信息。
         Returns:
-            list: 包含所有钓鱼杆物品信息的列表。
+            list: 包含所有渔具商店鱼竿信息的列表。
         """
-        self.cursor.execute("SELECT * FROM fishstore")
+        self.cursor.execute("SELECT * FROM fishing_rod_store")
         result = self.cursor.fetchall()
         return result
     
-    def get_fish_store_item(self, ID):
+    def get_fishing_rod_store_item(self, ID):
         """
-        获取指定名称的钓鱼商店物品信息。
+        获取指定名称的 渔具商店 鱼竿 信息。
         Args:
             ID (int): 物品ID。
         Returns:
-            list: 包含指定钓鱼杆物品信息的列表。
+            list: 包含指定渔具商店鱼竿信息的列表。
         """
-        self.cursor.execute("SELECT * FROM fishstore WHERE ID=?", (ID,))
+        self.cursor.execute("SELECT * FROM fishing_rod_store WHERE ID=?", (ID,))
+        result = self.cursor.fetchone()
+        return result
+    
+    # ********** bait_store表操作 **********
+
+    def get_all_bait_store(self):
+        """
+        获取所有 渔具商店 鱼饵 信息。  
+        Returns:
+            list: 包含所有鱼饵物品信息的列表。
+        """
+        self.cursor.execute("SELECT * FROM bait_store")
+        result = self.cursor.fetchall()
+        return result
+    
+    def get_bait_store_item(self, ID):
+        """
+        获取指定名称的 渔具商店 鱼饵 信息。
+        Args:
+            ID (int): 物品ID。
+        Returns:
+            list: 包含指定鱼饵物品信息的列表。
+        """
+        self.cursor.execute("SELECT * FROM bait_store WHERE ID=?", (ID,))
         result = self.cursor.fetchone()
         return result

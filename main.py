@@ -34,7 +34,7 @@ def open_databases(config,database_file,uid):
         db_store.close()
 
 
-@register("Database", "城城", "-----", "1.0.1")
+@register("Database", "城城", "-----", "1.0.2")
 class DatabasePlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
