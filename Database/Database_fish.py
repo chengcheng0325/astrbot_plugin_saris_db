@@ -63,6 +63,22 @@ class Database_fish():
             )
         """)
 
+        # 创建鱼表fish   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质，类型，是否任务
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS 箱子物品概率 (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                箱子名 TEXT NOT NULL,
+                物品名 TEXT NOT NULL,
+                类型 TEXT NOT NULL,
+                最小数量 INTEGER NOT NULL,
+                最大数量 INTEGER NOT NULL,
+                获取概率 REAL NOT NULL,
+                CHECK (最小数量 >= 0),
+                CHECK (最大数量 >= 最小数量),
+                CHECK (获取概率 >= 0 AND 获取概率 <= 1)
+            )
+        """)
+
         self._execute_sql_file("fish.sql")
 
     def _execute_sql_file(self, sql_file):
@@ -85,14 +101,21 @@ class Database_fish():
             if self.get_all_fishing_pole() == []:
                 self.cursor.execute(sql_script)
                 self.connection.commit()
-                print(f"成功执行 SQL 文件 '{sql_file}'")
+                print(f"成功执行 SQL 文件 1'{sql_file}'")
             
             with open(os.path.join(SQL_FILE, f"2{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
                 sql_script = f.read()
             if self.get_all_bait() == []:
                 self.cursor.execute(sql_script)
                 self.connection.commit()
-                print(f"成功执行 SQL 文件 '{sql_file}'")
+                print(f"成功执行 SQL 文件 2'{sql_file}'")
+            
+            with open(os.path.join(SQL_FILE, f"3{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
+                sql_script = f.read()
+            if self.get_all_box() == []:
+                self.cursor.execute(sql_script)
+                self.connection.commit()
+                print(f"成功执行 SQL 文件 3'{sql_file}'")
 
             
         except sqlite3.Error as e:
@@ -164,7 +187,7 @@ class Database_fish():
             print(f"查询鱼竿信息时发生错误：{e}")
             return None
 
-    # # ********** bait表操作 **********
+    # ********** bait表操作 **********
 
     def get_all_bait(self):
         """
@@ -198,4 +221,40 @@ class Database_fish():
             return result
         except sqlite3.Error as e:
             print(f"查询鱼饵信息时发生错误：{e}")
+            return None
+
+# ********** box表操作 **********
+
+    def get_all_box(self):
+        """
+        获取所有箱子的信息。
+        Returns:
+            一个元组，包含查询到的箱子的信息 (ID, 箱子名, 物品名, 类型, 最小数量, 最大数量, 获取概率)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("SELECT * FROM 箱子物品概率")
+            result = self.cursor.fetchall()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"获取箱子信息时发生错误：{e}")
+            return None
+        
+    def get_box_by_name(self, 箱子名):
+        """
+        根据 箱子名 查询箱子信息。
+        Args:
+            箱子名 (str): 箱子名称。
+        Returns:
+            一个元组，包含查询到的箱子信息 (ID, 箱子名, 物品名, 类型, 最小数量, 最大数量, 获取概率)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT *
+                FROM 箱子物品概率
+                WHERE 箱子名 = ?
+            """, (箱子名,))
+            result = self.cursor.fetchall()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询箱子信息时发生错误：{e}")
             return None

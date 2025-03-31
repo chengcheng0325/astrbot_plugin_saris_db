@@ -145,7 +145,25 @@ class Database_backpack(Star):
         except sqlite3.Error as e:
             print(f"查询用户时发生错误：{e}")
             return None
-        
+    
+    def update_backpack_all(self, ID, item_value, item_durability = 0):
+        """
+        更新用户背包内指定物品的所有属性。
+        Args:
+            ID: 物品ID (整数)。
+            item_value: 物品价值 (浮点数)。
+            item_durability: 物品耐久 (整数)。
+        """
+        if self.UserId is None: return
+        try:
+            self.cursor.execute("""
+                UPDATE Backpacks
+                SET ItemValue = ?, ItemMaxDurability = ?, ItemCurrentDurability = ?
+                WHERE UserId = ? AND ID = ?
+            """, (item_value, item_durability, item_durability, self.UserId, ID))
+            self.connection.commit()
+        except sqlite3.Error as e:
+            return f"更新背包物品时发生错误：{e}"
     
     def update_backpack_item_current_durability(self, item_current_durability, ID):
         """
@@ -164,6 +182,24 @@ class Database_backpack(Star):
             self.connection.commit()
         except sqlite3.Error as e:
             return f"更新背包物品时发生错误：{e}"
+        
+    def update_backpack_item_value(self, ItemValue, ID):
+        """
+        更新用户背包内指定物品的当前价格。
+        Args:
+            ItemValue: 物品价值 (浮点数)。
+            ID: 物品ID (整数)。
+        """
+        if self.UserId is None: return
+        try:
+            self.cursor.execute("""
+                UPDATE Backpacks
+                SET ItemValue = ?
+                WHERE UserId = ? AND ID = ?
+            """, (ItemValue, self.UserId, ID))
+            self.connection.commit()
+        except sqlite3.Error as e:
+            return f"更新背包物品价值时发生错误：{e}"
         
     def update_backpack_item_count(self, item_count, ID):
         """
