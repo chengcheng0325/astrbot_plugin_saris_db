@@ -34,7 +34,7 @@ def open_databases(config,database_file,uid):
         db_store.close()
 
 
-@register("Database", "城城", "-----", "1.0.2")
+@register("Database", "城城", "-----", "1.0.3")
 class DatabasePlugin(Star):
     def __init__(self, context: Context, config: dict):
         super().__init__(context)
@@ -42,6 +42,9 @@ class DatabasePlugin(Star):
 
     @filter.on_astrbot_loaded()
     async def on_astrbot_loaded(self):
+        """
+        插件初始化
+        """
         os.makedirs(DATABASE_FILE, exist_ok=True)
         os.makedirs(PLUGIN_DIR, exist_ok=True)
         

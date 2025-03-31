@@ -86,7 +86,7 @@ class Database_store():
                 if self.get_all_bait_store() == []:
                     self.cursor.execute(sql_script)
                     self.connection.commit()
-                    print(f"成功执行 SQL 文件 '{"1"+sql_file}'")
+                    print(f"成功执行 SQL 文件 '1{sql_file}'")
             
             with open(os.path.join(SQL_FILE, f"{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
                 sql_script = f.read()
