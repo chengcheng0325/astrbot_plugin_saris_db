@@ -39,12 +39,23 @@ class Database_user(Star):
             )
         """)
 
-        # 创建用户表Users   ID:自动编号   UserId:U+用户QQ    UID:用户QQ    UserName:用户名
+        # 创建用户表fish_cooling   ID:自动编号   UserId:U+用户QQ    cooling:冷却时间
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS fish_cooling (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 UserId TEXT NOT NULL,
                 cooling TEXT NOT NULL
+            )
+        """)
+
+        # 创建装备表equipment   ID:自动编号   UserId:U+用户QQ    equipment_type:装备类型    equipment_id:装备ID    equipment_name:装备名称
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS equipment (
+                ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                UserId TEXT NOT NULL,
+                equipment_type TEXT NOT NULL,
+                equipment_id INTEGER NOT NULL,
+                equipment_name TEXT NOT NULL
             )
         """)
 
@@ -261,3 +272,126 @@ class Database_user(Star):
             self.connection.commit()
         except sqlite3.Error as e:
             return f"更新签到记录时发生错误：{e}"
+        
+    # ********** equipment表操作 **********
+
+    def insert_equipment(self,equipment_type):
+        """
+        向 equipment 表中插入一条新记录。
+        Args:
+            equipment_type: 装备类型 (字符串)。
+        """
+        if self.UserId is None: return
+        if self.query_equipment_type(equipment_type) is not None: return
+        # print(self.query_equipment_type(equipment_type))
+        try:
+            self.cursor.execute("""
+                INSERT INTO equipment (UserId, equipment_type, equipment_id, equipment_name)
+                VALUES (?, ?, ?, ?)
+            """, (self.UserId, equipment_type, -1, "None"))
+            # print(equipment_type)
+            self.connection.commit()
+        except sqlite3.Error as e:
+            return f"插入装备记录时发生错误：{e}"
+    
+    def query_equipment_type(self,equipment_type):
+        """
+        根据 UserId 和 equipment_type 查询用户装备信息。
+        Args:
+            equipment_type: 装备类型 (字符串)。
+        Returns:
+            一个元组，包含查询到的装备信息 (ID, UserId, equipment_type, equipment_id, equipment_name)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT ID, UserId, equipment_type, equipment_id, equipment_name
+                FROM equipment
+                WHERE UserId = ? AND equipment_type = ?
+            """, (self.UserId, equipment_type))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询装备记录时发生错误：{e}")
+            return None
+        
+    def query_equipment_id(self,equipment_id):
+        """
+        根据 UserId 和 equipment_id 查询用户装备信息。
+        Args:
+            equipment_id: 装备ID (整数)。
+        Returns:
+            一个元组，包含查询到的装备信息 (ID, UserId, equipment_type, equipment_id, equipment_name)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT ID, UserId, equipment_type, equipment_id, equipment_name
+                FROM equipment
+                WHERE UserId = ? AND equipment_id = ?
+            """, (self.UserId, equipment_id))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询装备记录时发生错误：{e}")
+            return None
+        
+    def update_equipment(self,equipment_type,equipment_id,equipment_name):
+        """
+        更新用户装备信息。
+        Args:
+            equipment_type: 装备类型 (字符串)。
+            equipment_id: 装备ID (整数)。
+            equipment_name: 装备名称 (字符串)。
+        """
+        if self.UserId is None: return
+        try:
+            self.cursor.execute("""
+                UPDATE equipment
+                SET equipment_id = ?,
+                    equipment_name = ?
+                WHERE UserId = ? AND equipment_type = ?
+            """, (equipment_id, equipment_name, self.UserId, equipment_type))
+            self.connection.commit()
+        except sqlite3.Error as e:
+            return f"更新装备记录时发生错误：{e}"
+
+    # ********** 饰品操作方法 **********
+    
+    def add_accessory(self, slot, accessory_id, accessory_name):
+        """
+        添加饰品到指定栏位
+        Args:
+            slot: 饰品栏位(1-3)
+            accessory_id: 饰品ID
+            accessory_name: 饰品名称
+        Returns:
+            成功返回True，失败返回False
+        """
+        if slot not in ["1", "2", "3"]:
+            return False
+        return self.update_equipment(f"饰品{slot}", accessory_id, accessory_name)
+
+    def remove_accessory(self, slot):
+        """
+        移除指定栏位的饰品
+        Args:
+            slot: 饰品栏位(1-3)
+        Returns:
+            成功返回True，失败返回False
+        """
+        print(slot)
+        if slot not in ["1", "2", "3"]:
+            return False
+        return self.update_equipment(f"饰品{slot}", -1, "None")
+
+    def get_accessories(self):
+        """
+        获取用户所有饰品
+        Returns:
+            饰品列表，格式: [(slot, accessory_id, accessory_name), ...]
+        """
+        accessories = []
+        for slot in ["1", "2", "3"]:
+            result = self.query_equipment_type(f"饰品{slot}")
+            if result and result[3]:  # equipment_id不为空
+                accessories.append((slot, result[3], result[4]))  # (slot, id, name)
+        return accessories

@@ -16,7 +16,7 @@ import os
 PLUGIN_DIR = os.path.join('data', 'plugins', 'astrbot_plugin_saris_db')
 RUNNING_SCRIPT_DIRECTORY = os.getcwd()
 DATABASE_FILE = os.path.join(RUNNING_SCRIPT_DIRECTORY, os.path.join('data', 'Database'))
-
+EQUIPMENT_TYPE = ['鱼竿', '鱼饵', '头盔', '胸甲', '护腿', '饰品1', '饰品2', '饰品3']
 @contextmanager
 def open_databases(config,database_file,uid):
     db_user = Database_user(config=config,DatabaseFile=database_file,Id=uid)
@@ -66,6 +66,8 @@ class DatabasePlugin(Star):
             # 钓鱼冷却表
             if db_user.query_fish_cooling() == None:
                 db_user.insert_fish_cooling()
+            for i in EQUIPMENT_TYPE:
+                db_user.insert_equipment(i)
 
             # 经济表
             if db_economy.get_economy() == None:

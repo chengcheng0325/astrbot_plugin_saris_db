@@ -175,3 +175,15 @@ class Database_store():
         self.cursor.execute("SELECT * FROM bait_store WHERE ID=?", (ID,))
         result = self.cursor.fetchone()
         return result
+
+    def get_bait_store_item_ItemName(self, ItemName):
+        """
+        获取指定名称的 渔具商店 鱼饵 信息。
+        Args:
+            ItemName (str): 物品名称。
+        Returns:
+            list: 包含指定鱼饵物品信息的列表。
+        """
+        self.cursor.execute("SELECT * FROM bait_store WHERE ItemName=?", (ItemName,))
+        result = self.cursor.fetchone()
+        return result
