@@ -63,6 +63,17 @@ class Database_fish():
             )
         """)
 
+        # 创建鱼饵表jewelry   自动编号，种类，渔力(整数)，价格(浮点)，稀有度
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS jewelry (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                种类 TEXT UNIQUE NOT NULL,
+                渔力 INTEGER,
+                价格 REAL,
+                描述 TEXT
+            )
+        """)
+
         # 创建鱼表fish   自动编号，种类，价格(浮点)，稀有度，高度(列表)，生物群系(列表)，渔获品质，类型，是否任务
         self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS 箱子物品概率 (
@@ -116,6 +127,13 @@ class Database_fish():
                 self.cursor.execute(sql_script)
                 self.connection.commit()
                 print(f"成功执行 SQL 文件 3'{sql_file}'")
+
+            with open(os.path.join(SQL_FILE, f"4{sql_file}"), 'r', encoding='utf-8') as f:  # 使用 utf-8 编码处理文件
+                sql_script = f.read()
+            if self.get_all_jewelry() == []:
+                self.cursor.execute(sql_script)
+                self.connection.commit()
+                print(f"成功执行 SQL 文件 4'{sql_file}'")
 
             
         except sqlite3.Error as e:
@@ -257,4 +275,41 @@ class Database_fish():
             return result
         except sqlite3.Error as e:
             print(f"查询箱子信息时发生错误：{e}")
+            return None
+        
+    
+    # ********** jewelry表操作 **********
+
+    def get_all_jewelry(self):
+        """
+        获取所有饰品的信息。
+        Returns:
+            一个元组，包含查询到的饰品的信息 (ID, 种类, 渔力, 价格, 描述)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("SELECT * FROM jewelry")
+            result = self.cursor.fetchall()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"获取饰品信息时发生错误：{e}")
+            return None
+        
+    def get_jewelry_by_kind(self, 种类):
+        """
+        根据 饰品种类 查询饰品信息。
+        Args:
+            种类 (str): 饰品名称。
+        Returns:
+            一个元组，包含查询到的饰品信息 (ID, 种类, 渔力, 价格, 描述)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT *
+                FROM jewelry
+                WHERE 种类 = ?
+            """, (种类,))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询饰品信息时发生错误：{e}")
             return None

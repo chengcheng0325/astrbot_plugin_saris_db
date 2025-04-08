@@ -293,6 +293,24 @@ class Database_user(Star):
             self.connection.commit()
         except sqlite3.Error as e:
             return f"插入装备记录时发生错误：{e}"
+        
+    # def query_equipment_all(self):
+    #     """
+    #     根据 UserId 查询用户所有装备信息。
+    #     Returns:
+    #         一个列表，包含查询到的所有装备信息 (ID, UserId, equipment_type, equipment_id, equipment_name)。
+    #     """
+    #     try:
+    #         self.cursor.execute("""
+    #             SELECT ID, UserId, equipment_type, equipment_id, equipment_name
+    #             FROM equipment
+    #             WHERE UserId = ?
+    #         """, (self.UserId,))
+    #         result = self.cursor.fetchall()  # 获取所有记录
+    #         return result
+    #     except sqlite3.Error as e:
+    #         print(f"查询用户时发生错误：{e}")
+    #         return None
     
     def query_equipment_type(self,equipment_type):
         """
