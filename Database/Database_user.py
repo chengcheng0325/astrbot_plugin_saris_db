@@ -352,6 +352,26 @@ class Database_user(Star):
             print(f"查询装备记录时发生错误：{e}")
             return None
         
+    def query_equipment_name(self,equipment_name):
+        """
+        根据 UserId 和 equipment_name 查询用户装备信息。
+        Args:
+            equipment_name: 装备名称 (字符串)。
+        Returns:
+            一个元组，包含查询到的装备信息 (ID, UserId, equipment_type, equipment_id, equipment_name)，如果没有找到则返回 None。
+        """
+        try:
+            self.cursor.execute("""
+                SELECT ID, UserId, equipment_type, equipment_id, equipment_name
+                FROM equipment
+                WHERE UserId = ? AND equipment_name = ?
+            """, (self.UserId, equipment_name))
+            result = self.cursor.fetchone()  # 获取一条记录
+            return result
+        except sqlite3.Error as e:
+            print(f"查询装备记录时发生错误：{e}")
+            return None
+        
     def update_equipment(self,equipment_type,equipment_id,equipment_name):
         """
         更新用户装备信息。

@@ -65,6 +65,17 @@ class Database_economy(Star):
         self.cursor.execute("UPDATE wallet SET Economy = Economy - ? WHERE UserId = ?", (amount, self.UserId))
         self.connection.commit()
 
+    def add_economy_UserId(self, UserId, amount):
+        """
+        增加用户金币。
+
+        Args:
+            amount: 要增加的金币数量。
+        """
+        if self.UserId is None: return
+        self.cursor.execute("UPDATE wallet SET Economy = Economy + ? WHERE UserId = ?", (amount, UserId))
+        self.connection.commit()
+
     def get_economy(self):
         """
         获取用户金币。
