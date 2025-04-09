@@ -360,8 +360,8 @@ class Database_backpack(Star):
             self.cursor.execute("""
                 SELECT ID, UserId, ItemName, ItemCount, ItemType, ItemValue, ItemMaxDurability, ItemCurrentDurability
                 FROM trade
-                WHERE UserId = ? AND ID = ?
-            """, (self.UserId, ID))
+                WHEREID = ?
+            """, (ID))
             result = self.cursor.fetchone()  # 获取一条记录
             return result
         except sqlite3.Error as e:
