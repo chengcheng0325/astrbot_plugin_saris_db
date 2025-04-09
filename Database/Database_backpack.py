@@ -471,8 +471,8 @@ class Database_backpack(Star):
             self.cursor.execute("""
                 UPDATE trade
                 SET ItemCount = ItemCount + ?
-                WHERE UserId = ? AND ID = ?
-            """, (item_count, self.UserId, ID))
+                WHERE ID = ?
+            """, (item_count, ID))
             self.connection.commit()
         except sqlite3.Error as e:
             return f"更新交易物品数量时发生错误：{e}"
@@ -487,8 +487,8 @@ class Database_backpack(Star):
         try:
             self.cursor.execute("""
                 DELETE FROM trade
-                WHERE UserId = ? AND ID = ?
-            """, (self.UserId, ID))
+                WHERE ID = ?
+            """, (ID,))
             self.connection.commit()
         except sqlite3.Error as e:
             return f"删除交易物品时发生错误：{e}"
