@@ -361,7 +361,7 @@ class Database_backpack(Star):
                 SELECT ID, UserId, ItemName, ItemCount, ItemType, ItemValue, ItemMaxDurability, ItemCurrentDurability
                 FROM trade
                 WHERE ID = ?
-            """, (ID))
+            """, (ID,))
             result = self.cursor.fetchone()  # 获取一条记录
             return result
         except sqlite3.Error as e:
